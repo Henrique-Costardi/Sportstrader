@@ -1,0 +1,220 @@
+{% extends '_layout.html' %}
+{% load static from staticfiles %}
+
+
+      <!-- **********************************************************************************************************************************************************
+      MAIN CONTENT
+      *********************************************************************************************************************************************************** -->
+      <!--main content start-->
+      {% block content %}
+      <section id="main-content">
+          <section class="wrapper">
+          	<h3><i class="fa fa-angle-right"></i> {{request.user.username.capitalize}}'s Home</h3>
+              <div class="row mt">
+			  		<div class="col-lg-12">
+                      <div class="content-panel">
+                      <h4><i class="fa fa-angle-right"></i> Assets</h4>
+                          <section id="unseen">
+                            <table class="table table-striped table-advance table-hover sortable">
+                              <thead class="cf">
+                              <tr>
+                                  <th>Owner</th>
+                                  <th>Athlete Name</th>
+                                  <th>Code</th>
+                                  <th class="numeric">Share Value</th>
+                                  <th class="numeric">Shares Quantity</th>
+                                  <th class="numeric">Sport</th>
+                                  <th class="numeric">Worth</th>
+
+                              </tr>
+                              </thead>
+                              <tbody>
+                              {% for dict in context %}
+                                {% for bank in dict %}
+                                    {% if 'BANK' in bank.db_type and request.user.username == bank.owner_id and bank.paper_qty > 0 %}
+                                      <tr>
+                                          <td>{{ bank.owner_id.capitalize }}</td>
+                                          <td>{{ bank.paper_name }}</td>
+                                          <td>{{ bank.paper_code }}</td>
+                                          <td class="numeric">${{ bank.paper_value }}</td>
+                                          <td class="numeric">{{ bank.paper_qty }} units</td>
+                                          <td class="numeric">{{ bank.sport }}</td>
+                                          <td class="numeric">${% widthratio bank.paper_value 1 bank.paper_qty %}</td>
+                                          {% if request.user.username == order.owner_id %}
+                                          {% if order.status == "CANCELLED" %}
+                                          <td>
+                                              <form action="{% url 'etrade:reactivate_order' %}" method="POST">{% csrf_token %}
+                                                  <input type="hidden" name="order_id" value="{{order.order_id}}" />
+                                                  <button type="submit" class="btn btn-success btn-xs" ><i class="fa fa-check"></i></button>
+                                              </form>
+                                          </td>
+                                          {% elif order.status == 'OPEN' or order.status == 'PARTIAL' %}
+                                          <td>
+                                              <form action="{% url 'etrade:cancel_order' %}" method="POST">{% csrf_token %}
+                                                  <input type="hidden" name="order_id" value="{{order.order_id}}" />
+                                                  <button type="submit" class="btn btn-danger btn-xs" ><i class="fa fa-trash-o"></i></button>
+                                              </form>
+                                          </td>
+                                          {% else %}
+                                          <td>
+                                              <button class="btn btn-warning btn-xs" ><i class="fa fa-database"></i></button>
+                                          </td>
+                                          {% endif %}
+                                          {% endif %}
+                                      </tr>
+                                    {% endif %}
+                                {% endfor %}
+                              {% endfor %}
+                          </table>
+                          </section>
+                        </div><!-- /row -->
+              <div class="row mt">
+			  		<div class="col-lg-12">
+                      <div class="content-panel">
+                      <h4><i class="fa fa-angle-right"></i> Buy Orders</h4>
+                          <section id="unseen">
+                            <table class="table table-striped table-advance table-hover sortable">
+                              <thead class="cf">
+                              <tr>
+                                  <th>Buyer</th>
+                                  <th>Order ID</th>
+                                  <th>Athlete Name</th>
+                                  <th>Code</th>
+                                  <th class="numeric">Order Value</th>
+                                  <th class="numeric">Order Initial Quantity</th>
+                                  <th class="numeric">Order Pending Quantity</th>
+                                  <th class="numeric">Sport</th>
+                                  <th><i class=" fa fa-edit"></i> Status</th>
+
+                              </tr>
+                              </thead>
+                              <tbody>
+                              {% for dict in context %}
+                                {% for order in dict %}
+                                    {% if 'buy' in order.order_id and request.user.username == order.owner_id %}
+                                      <tr>
+                                          <td>{{ order.owner_id.capitalize }}</td>
+                                          <td>{{ order.order_id.capitalize }}</td>
+                                          <td>{{ order.paper_name }}</td>
+                                          <td>{{ order.paper_code }}</td>
+                                          <td class="numeric">${{ order.order_value }}</td>
+                                          <td class="numeric">{{ order.order_initial_qty }} units</td>
+                                          <td class="numeric">{{ order.order_qty }} units</td>
+                                          <td class="numeric">{{ order.sport }}</td>
+                                          {% if order.status == 'OPEN' %}
+                                            <td><span class="label label-info label-mini">{{ order.status }}</span></td>
+                                          {% elif order.status == 'PARTIAL' %}
+                                            <td><span class="label label-warning label-mini">{{ order.status }}</span></td>
+                                          {% elif order.status == 'COMPLETE' %}
+                                            <td><span class="label label-success label-mini">{{ order.status }}</span></td>
+                                          {% else %}
+                                            <td><span class="label label-danger label-mini">{{ order.status }}</span></td>
+                                          {% endif %}
+                                          {% if request.user.username == order.owner_id %}
+                                          {% if order.status == "CANCELLED" %}
+                                          <td>
+                                              <form action="{% url 'etrade:reactivate_order' %}" method="POST">{% csrf_token %}
+                                                  <input type="hidden" name="order_id" value="{{order.order_id}}" />
+                                                  <button type="submit" class="btn btn-success btn-xs" ><i class="fa fa-check"></i></button>
+                                              </form>
+                                          </td>
+                                          {% elif order.status == 'OPEN' or order.status == 'PARTIAL' %}
+                                          <td>
+                                              <form action="{% url 'etrade:cancel_order' %}" method="POST">{% csrf_token %}
+                                                  <input type="hidden" name="order_id" value="{{order.order_id}}" />
+                                                  <button type="submit" class="btn btn-danger btn-xs" ><i class="fa fa-trash-o"></i></button>
+                                              </form>
+                                          </td>
+                                          {% else %}
+                                          <td>
+                                              <button class="btn btn-warning btn-xs" ><i class="fa fa-database"></i></button>
+                                          </td>
+                                          {% endif %}
+                                          {% endif %}
+                                      </tr>
+                                    {% endif %}
+                                {% endfor %}
+                              {% endfor %}
+                          </table>
+                          </section>
+
+                  </div><!-- /content-panel -->
+               </div><!-- /col-lg-4 -->
+		  	</div><!-- /row -->
+
+		  	<div class="row mt">
+			  		<div class="col-lg-12">
+                      <div class="content-panel">
+                      <h4><i class="fa fa-angle-right"></i> Sell Orders</h4>
+                          <section id="unseen">
+                            <table class="table table-striped table-advance table-hover sortable">
+                              <thead class="cf">
+                              <tr>
+                                  <th>Seller</th>
+                                  <th>Order ID</th>
+                                  <th>Athlete Name</th>
+                                  <th>Code</th>
+                                  <th class="numeric">Order Value</th>
+                                  <th class="numeric">Order Initial Quantity</th>
+                                  <th class="numeric">Order Pending Quantity</th>
+                                  <th class="numeric">Sport</th>
+                                  <th><i class=" fa fa-edit"></i> Status</th>
+                              </tr>
+                              </thead>
+                              <tbody>
+                              {% for dict in context %}
+                                {% for order in dict %}
+                                    {% if 'sell' in order.order_id  and request.user.username == order.owner_id %}
+                                      <tr>
+
+                                          <td>{{ order.owner_id.capitalize }}</td>
+                                          <td>{{ order.order_id.capitalize }}</td>
+                                          <td>{{ order.paper_name }}</td>
+                                          <td>{{ order.paper_code }}</td>
+                                          <td class="numeric">${{ order.order_value }}</td>
+                                          <td class="numeric">{{ order.order_initial_qty }} units</td>
+                                          <td class="numeric">{{ order.order_qty }} units</td>
+                                          <td class="numeric">{{ order.sport }}</td>
+                                          {% if order.status == 'OPEN' %}
+                                            <td><span class="label label-info label-mini">{{ order.status }}</span></td>
+                                          {% elif order.status == 'PARTIAL' %}
+                                            <td><span class="label label-warning label-mini">{{ order.status }}</span></td>
+                                          {% elif order.status == 'COMPLETE' %}
+                                            <td><span class="label label-success label-mini">{{ order.status }}</span></td>
+                                          {% else %}
+                                            <td><span class="label label-danger label-mini">{{ order.status }}</span></td>
+                                          {% endif %}
+                                          {% if request.user.username == order.owner_id %}
+                                            {% if order.status == "CANCELLED" %}
+                                              <td>
+                                                  <form action="{% url 'etrade:reactivate_order' %}" method="POST">{% csrf_token %}
+                                                      <input type="hidden" name="order_id" value="{{order.order_id}}" />
+                                                      <button type="submit" class="btn btn-success btn-xs" ><i class="fa fa-check"></i></button>
+                                                  </form>
+                                              </td>
+                                            {% elif order.status == 'OPEN' or order.status == 'PARTIAL' %}
+                                              <td>
+                                                  <form action="{% url 'etrade:cancel_order' %}" method="POST">{% csrf_token %}
+                                                      <input type="hidden" name="order_id" value="{{order.order_id}}" />
+                                                      <button type="submit" class="btn btn-danger btn-xs" ><i class="fa fa-trash-o"></i></button>
+                                                  </form>
+                                              </td>
+                                            {% else %}
+                                              <td>
+                                                  <button class="btn btn-warning btn-xs" ><i class="fa fa-database"></i></button>
+                                              </td>
+                                            {% endif %}
+                                          {% endif %}
+                                          </tr>
+                                    {% endif %}
+                                {% endfor %}
+                              {% endfor %}
+                          </table>
+                          </section>
+
+                  </div><!-- /content-panel -->
+               </div><!-- /col-lg-4 -->
+		  	</div><!-- /row -->
+		</section><! --/wrapper -->
+      </section><!-- /MAIN CONTENT -->
+      {% endblock %}
